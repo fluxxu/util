@@ -30,6 +30,7 @@ func NewValidationContext() *ValidationContext {
 
 type ValidationErrorInterface interface {
 	ValidationErrors() ValidationErrors
+	ToResponseData() map[string]interface{}
 }
 
 type ValidationError struct {
