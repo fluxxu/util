@@ -44,6 +44,10 @@ func (ve *ValidationError) ValidationErrors() ValidationErrors {
 	return ve.errors
 }
 
+func (ve *ValidationError) ToResponseData() map[string]interface{} {
+	return map[string]interface{}{"errors": ve.errors}
+}
+
 func NewValidationError(v *ValidationContext) *ValidationError {
 	return &ValidationError{errors: v.errors}
 }
