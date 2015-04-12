@@ -15,16 +15,19 @@ func (p *SquirrelDBProxy) QueryRow(sql string, args ...interface{}) squirrel.Row
 
 type Txx struct {
 	*sql.Tx
-	OnCommit   Delegate
-	OnRollback Delegate
+	AfterCommit    Delegate
+	BeforeRollback Delegate
 }
 
 func (tx Txx) Commit() error {
-	tx.OnCommit.Invoke()
-	return tx.Tx.Commit()
+	if err := tx.Tx.Commit(); err != nil {
+		return err
+	}
+	tx.AfterCommit.Invoke()
+	return nil
 }
 
 func (tx Txx) Rollback() error {
-	tx.OnRollback.Invoke()
+	tx.BeforeRollback.Invoke()
 	return tx.Tx.Rollback()
 }
