@@ -56,7 +56,7 @@ func (p *SqlProvider) filterWhereParts() []wherePart {
 	return parts
 }
 
-func (p *SqlProvider) Count() (int, error) {
+func (p *SqlProvider) count() (int, error) {
 	var count int
 	q := squirrel.Select("COUNT(*)").From(p.table)
 	for _, part := range p.filterWhereParts() {
@@ -73,20 +73,36 @@ func (p *SqlProvider) Count() (int, error) {
 	return count, nil
 }
 
-func (p *SqlProvider) Read(dst interface{}) error {
+func (p *SqlProvider) Read(dst interface{}) (*ProviderResponse, error) {
+	r := &ProviderResponse{}
 	q := squirrel.Select(p.fields...).From(p.table).Limit(p.take).Offset(p.skip)
 	for _, part := range p.filterWhereParts() {
 		q = q.Where(part.pred, part.args...)
 	}
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	//fmt.Println("Select:" + sql)
 	if err = p.dbx.Select(dst, sql, args...); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	r.Data = dst
+
+	if p.stat {
+		count, err := p.count()
+		if err != nil {
+			return nil, err
+		}
+
+		r.Stat = map[string]int{
+			"count": count,
+			"take":  int(p.take),
+			"skip":  int(p.skip),
+		}
+	}
+	return r, nil
 }
 
 func NewSqlProvider(dbx *sqlx.DB, table string, s interface{}) *SqlProvider {

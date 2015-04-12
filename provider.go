@@ -28,17 +28,22 @@ type Sorter interface {
 	GetSort() string
 }
 
+type ProviderResponse struct {
+	Stat map[string]int `json:"stat"`
+	Data interface{}    `json:"data"`
+}
+
 type Provider interface {
 	Pager
 	Filter
 	Sorter
 	ParseRequest(r *http.Request)
 
-	Count() (int, error)
-	Read(dst interface{}) error
+	Read(dst interface{}) (*ProviderResponse, error)
 }
 
 type BaseProvider struct {
+	stat       bool
 	take       uint64
 	skip       uint64
 	filterKeys map[string]bool
@@ -77,6 +82,10 @@ func (p *BaseProvider) GetFilters() Filters {
 	return p.filters
 }
 
+func (p *BaseProvider) SetStat(v bool) {
+	p.stat = v
+}
+
 func (p *BaseProvider) SetSort(k string) {
 	if _, ok := p.sortKeys[k]; ok {
 		p.sort = k
@@ -112,6 +121,8 @@ func (p *BaseProvider) ParseRequest(r *http.Request) {
 
 		if k == "sort" {
 			p.SetSort(lv)
+		} else if k == "stat" {
+			p.SetStat(true)
 		} else if k == "take" {
 			if iv, err := strconv.Atoi(lv); err == nil {
 				p.SetTake(uint64(iv))
