@@ -21,7 +21,7 @@ func (p *SqlProvider) ParseStruct(s interface{}) {
 		f := t.Field(i)
 		dbtag := strings.TrimSpace(f.Tag.Get("db"))
 		if dbtag != "" && dbtag != "-" {
-			p.fields = append(p.fields, dbtag)
+			p.fields = append(p.fields, "`"+dbtag+"`")
 			//sort, filter
 			tag := strings.TrimSpace(f.Tag.Get("provider"))
 			for _, attr := range strings.Split(tag, " ") {
@@ -107,7 +107,7 @@ func (p *SqlProvider) Read(dst interface{}) (*ProviderResponse, error) {
 
 func NewSqlProvider(dbx *sqlx.DB, table string, s interface{}) *SqlProvider {
 	p := &SqlProvider{
-		table: table,
+		table: "`" + table + "`",
 		dbx:   dbx,
 	}
 	p.BaseProvider = NewBaseProvider()

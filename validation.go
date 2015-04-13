@@ -1,5 +1,9 @@
 package util
 
+import (
+	"fmt"
+)
+
 type ValidationErrors map[string][]string
 
 type ValidationContext struct {
@@ -38,7 +42,7 @@ type ValidationError struct {
 }
 
 func (ve *ValidationError) Error() string {
-	return "validation error"
+	return fmt.Sprintf("validation error: %s", ve.errors)
 }
 
 func (ve *ValidationError) ValidationErrors() ValidationErrors {

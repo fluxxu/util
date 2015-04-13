@@ -2,6 +2,7 @@ package util
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/lann/squirrel"
 )
 
@@ -25,6 +26,13 @@ func (tx Txx) Commit() error {
 	}
 	tx.AfterCommit.Invoke()
 	return nil
+}
+
+func (tx Txx) RollbackWithErrorf(f string, args ...interface{}) error {
+	if txErr := tx.Rollback(); txErr != nil {
+		return fmt.Errorf("%s; %s", fmt.Sprintf(f, args...), txErr)
+	}
+	return fmt.Errorf(f, args...)
 }
 
 func (tx Txx) Rollback() error {
