@@ -13,6 +13,11 @@ type SqlProvider struct {
 	table  string
 	dbx    *sqlx.DB
 	fields []string
+	where  squirrel.Eq
+}
+
+func (p *SqlProvider) SetWhere(where map[string]interface{}) {
+	p.where = squirrel.Eq(where)
 }
 
 func (p *SqlProvider) ParseStruct(s interface{}) {
@@ -20,10 +25,10 @@ func (p *SqlProvider) ParseStruct(s interface{}) {
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		dbtag := strings.TrimSpace(f.Tag.Get("db"))
-		if dbtag != "" && dbtag != "-" {
+		tag := strings.TrimSpace(f.Tag.Get("provider"))
+		if dbtag != "" && dbtag != "-" && tag != "-" {
 			p.fields = append(p.fields, "`"+dbtag+"`")
 			//sort, filter
-			tag := strings.TrimSpace(f.Tag.Get("provider"))
 			for _, attr := range strings.Split(tag, " ") {
 				attr = strings.TrimSpace(attr)
 				if attr == "sort" {
@@ -62,6 +67,9 @@ func (p *SqlProvider) count() (int, error) {
 	for _, part := range p.filterWhereParts() {
 		q = q.Where(part.pred, part.args...)
 	}
+	if p.where != nil {
+		q = q.Where(p.where)
+	}
 	sql, args, err := q.ToSql()
 	if err != nil {
 		return 0, err
@@ -78,6 +86,9 @@ func (p *SqlProvider) Read(dst interface{}) (*ProviderResponse, error) {
 	q := squirrel.Select(p.fields...).From(p.table).Limit(p.take).Offset(p.skip)
 	for _, part := range p.filterWhereParts() {
 		q = q.Where(part.pred, part.args...)
+	}
+	if p.where != nil {
+		q = q.Where(p.where)
 	}
 	sql, args, err := q.ToSql()
 	if err != nil {

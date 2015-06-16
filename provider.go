@@ -60,8 +60,16 @@ func (p *BaseProvider) SetTake(v uint64) {
 	p.take = v
 }
 
+func (p *BaseProvider) GetTake() uint64 {
+	return p.take
+}
+
 func (p *BaseProvider) SetSkip(v uint64) {
 	p.skip = v
+}
+
+func (p *BaseProvider) GetSkip() uint64 {
+	return p.skip
 }
 
 func (p *BaseProvider) AddFilter(k, v string) {
@@ -84,6 +92,10 @@ func (p *BaseProvider) GetFilters() Filters {
 
 func (p *BaseProvider) SetStat(v bool) {
 	p.stat = v
+}
+
+func (p *BaseProvider) GetStat() bool {
+	return p.stat
 }
 
 func (p *BaseProvider) SetSort(k string) {

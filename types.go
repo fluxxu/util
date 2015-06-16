@@ -26,6 +26,10 @@ func (nt NullTime) Value() (driver.Value, error) {
 }
 
 func (nt *NullTime) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		nt.Valid = false
+		return nil
+	}
 	err := json.Unmarshal(data, &nt.Time)
 	if err != nil {
 		return err
