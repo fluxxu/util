@@ -65,3 +65,7 @@ func (t JSONTime) MarshalJSON() ([]byte, error) {
 func (t JSONTime) String() string {
 	return time.Time(t).String()
 }
+
+func (t JSONTime) Time() time.Time {
+	return time.Time(t)
+}
