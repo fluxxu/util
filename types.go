@@ -69,3 +69,7 @@ func (t JSONTime) String() string {
 func (t JSONTime) Time() time.Time {
 	return time.Time(t)
 }
+
+func (t JSONTime) Equal(t2 JSONTime) bool {
+	return time.Time(t).Format(JSONTimeLayout) == time.Time(t2).Format(JSONTimeLayout)
+}
